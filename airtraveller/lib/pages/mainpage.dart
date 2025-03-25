@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'AirTraveller',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.indigo,
+        primaryColor: const Color.fromARGB(255, 12, 41, 206),
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: Colors.indigo,
         ).copyWith(secondary: Colors.amberAccent),
@@ -49,14 +49,19 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.indigo),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person, color: Colors.indigo),
+              leading: Icon(
+                Icons.person,
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
               title: Text('Profile'),
               onTap: () {
                 Navigator.pop(context);
@@ -75,7 +80,10 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings, color: Colors.indigo),
+              leading: Icon(
+                Icons.settings,
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
               title: Text('Definições'),
               onTap: () {
                 Navigator.pop(context);

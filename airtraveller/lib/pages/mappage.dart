@@ -28,7 +28,10 @@ class MapScreen extends StatelessWidget {
       body: FlutterMap(
         mapController: MapController(),
         options: const MapOptions(
-          initialCenter: LatLng(38.7169, -9.1399), // Lisboa como exemplo
+          initialCenter: LatLng(
+            39.4036,
+            -9.1354,
+          ), // Caldas da Rainha como exemplo
           initialZoom: 13.0,
         ),
         children: [
@@ -39,7 +42,7 @@ class MapScreen extends StatelessWidget {
           MarkerLayer(
             markers: [
               Marker(
-                point: LatLng(38.7169, -9.1399),
+                point: LatLng(39.4036, -9.1354),
                 width: 80,
                 height: 80,
                 child: const Icon(
