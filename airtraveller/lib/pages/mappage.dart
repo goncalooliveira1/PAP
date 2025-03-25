@@ -24,7 +24,7 @@ class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mapa Leaflet no Flutter")),
+      appBar: AppBar(title: const Text("Mapa")),
       body: FlutterMap(
         mapController: MapController(),
         options: const MapOptions(

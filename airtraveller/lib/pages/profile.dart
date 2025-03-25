@@ -5,11 +5,12 @@ class ProfilePage extends StatelessWidget {
   final int totalPoints;
   final List<String> feedbacks;
 
-  ProfilePage({
+  const ProfilePage({
+    Key? key,
     required this.userName,
     required this.totalPoints,
     required this.feedbacks,
-  });
+  }) : super(key: key);
 
   String _getUserRank() {
     if (totalPoints < 50) {
@@ -24,79 +25,82 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('$userName\'s Profile'),
-        backgroundColor: Colors.blue,
+        title: Text("Perfil"),
+        backgroundColor: Colors.blueAccent,
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.start, // Mantém os elementos no topo
+          crossAxisAlignment:
+              CrossAxisAlignment.center, // Centraliza horizontalmente
           children: [
-            _buildUserInfo(),
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.blueAccent,
+              child: Text(
+                userName[0],
+                style: TextStyle(fontSize: 40, color: Colors.white),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              userName,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Rank: ${_getUserRank()}",
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
             SizedBox(height: 20),
-            _buildUserRank(),
-            SizedBox(height: 20),
-            _buildUserFeedbacks(),
-            SizedBox(height: 20),
-            _buildUserPoints(),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Pontos: $totalPoints",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Feedbacks:",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    ...feedbacks.map(
+                      (feedback) => ListTile(
+                        leading: Icon(Icons.feedback, color: Colors.blue),
+                        title: Text(feedback, style: TextStyle(fontSize: 16)),
+                      ),
+                    ),
+                    if (feedbacks.isEmpty)
+                      Text(
+                        "Nenhum feedback ainda.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildUserInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Nome de Usuário: $userName',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        Text(
-          'Feedbacks:',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUserRank() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Rank: ${_getUserRank()}', style: TextStyle(fontSize: 18)),
-      ],
-    );
-  }
-
-  Widget _buildUserFeedbacks() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...feedbacks.map((feedback) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Text('- $feedback', style: TextStyle(fontSize: 16)),
-          );
-        }).toList(),
-        if (feedbacks.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'Nenhum feedback ainda.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildUserPoints() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text('Pontos: $totalPoints', style: TextStyle(fontSize: 18))],
     );
   }
 }

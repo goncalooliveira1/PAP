@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'CommentsPage.dart';
+import 'mappage.dart'; // Import the MapPage class
 import 'profile.dart';
 import 'settings.dart';
 
@@ -15,8 +16,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Colors.indigo,
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo)
-            .copyWith(secondary: Colors.amberAccent),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.indigo,
+        ).copyWith(secondary: Colors.amberAccent),
       ),
       home: AirTravellerHomePage(),
     );
@@ -42,51 +44,51 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: Icon(Icons.person, color: Colors.indigo),
-                      title: Text('Profile'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProfilePage(
-                                    userName: 'User Name',
-                                    totalPoints: 100,
-                                    feedbacks: [],
-                                  )),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.settings, color: Colors.indigo),
-                      title: Text('Definições'),
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.indigo),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.person, color: Colors.indigo),
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => ProfilePage(
+                          userName:
+                              'User Name', // Replace with actual user name
+                          totalPoints: 100, // Replace with actual total points
+                          feedbacks: [], // Replace with actual feedbacks list
+                        ),
+                  ),
                 );
               },
-            );
-          },
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.black),
             ),
-          ),
+            ListTile(
+              leading: Icon(Icons.settings, color: Colors.indigo),
+              title: Text('Definições'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+          ],
         ),
+      ),
+      appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -94,7 +96,7 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MapPage()),
+                  MaterialPageRoute(builder: (context) => MapScreen()),
                 );
               },
               child: Text(
@@ -109,10 +111,14 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
             SizedBox(width: 20),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CommentsPage()),
-                );
+                try {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CommentsPage()),
+                  );
+                } catch (e) {
+                  print("Erro ao abrir CommentsPage: \$e");
+                }
               },
               child: Text(
                 'Comentários',
@@ -128,16 +134,6 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
         centerTitle: true,
       ),
       body: Container(),
-    );
-  }
-}
-
-class MapPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Mapa")),
-      body: Center(child: Text("Aqui ficará a página do mapa.")),
     );
   }
 }
