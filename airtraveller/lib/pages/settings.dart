@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
@@ -67,14 +69,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _changeUsername() {
-    TextEditingController _controller = TextEditingController(text: _username);
+    TextEditingController controller = TextEditingController(text: _username);
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
             title: Text('Alterar Nome de Utilizador'),
             content: TextField(
-              controller: _controller,
+              controller: controller,
               decoration: InputDecoration(hintText: 'Digite seu nome'),
             ),
             actions: [
@@ -85,9 +87,9 @@ class _SettingsPageState extends State<SettingsPage> {
               TextButton(
                 onPressed: () {
                   setState(() {
-                    _username = _controller.text;
+                    _username = controller.text;
                   });
-                  _updateSetting('username', _controller.text);
+                  _updateSetting('username', controller.text);
                   Navigator.pop(context);
                 },
                 child: Text('Salvar'),

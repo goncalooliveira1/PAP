@@ -6,11 +6,11 @@ class ProfilePage extends StatelessWidget {
   final List<String> feedbacks;
 
   const ProfilePage({
-    Key? key,
+    super.key,
     required this.userName,
     required this.totalPoints,
     required this.feedbacks,
-  }) : super(key: key);
+  });
 
   String _getUserRank() {
     if (totalPoints < 50) {

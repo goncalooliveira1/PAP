@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class CommentsPage extends StatefulWidget {
+  const CommentsPage({super.key});
+
   @override
   _CommentsPageState createState() => _CommentsPageState();
 }
 
 class _CommentsPageState extends State<CommentsPage> {
-  TextEditingController _commentController = TextEditingController();
-  List<Comment> _comments = [];
+  final TextEditingController _commentController = TextEditingController();
+  final List<Comment> _comments = [];
 
   void _addComment(String text) {
     final now = DateTime.now();
@@ -168,7 +170,6 @@ class _CommentsPageState extends State<CommentsPage> {
                   _addComment(_commentController.text);
                 }
               },
-              child: Text('Adicionar Comentário'),
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -176,6 +177,7 @@ class _CommentsPageState extends State<CommentsPage> {
                 padding: EdgeInsets.symmetric(vertical: 15),
                 backgroundColor: Colors.blue,
               ),
+              child: Text('Adicionar Comentário'),
             ),
           ],
         ),
