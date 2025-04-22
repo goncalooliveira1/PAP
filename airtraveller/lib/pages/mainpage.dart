@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'commentspage.dart';
+=======
+import 'CommentsPage.dart';
+import 'mappage.dart'; // Import the MapPage class
+>>>>>>> origin/main
 import 'profile.dart';
 import 'settings.dart';
 
@@ -9,15 +14,18 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AirTraveller',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.indigo,
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo)
-            .copyWith(secondary: Colors.amberAccent),
+        primaryColor: const Color.fromARGB(255, 12, 41, 206),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.indigo,
+        ).copyWith(secondary: Colors.amberAccent),
       ),
       home: AirTravellerHomePage(),
     );
@@ -25,6 +33,8 @@ class MyApp extends StatelessWidget {
 }
 
 class AirTravellerHomePage extends StatefulWidget {
+  const AirTravellerHomePage({super.key});
+
   @override
   _AirTravellerHomePageState createState() => _AirTravellerHomePageState();
 }
@@ -43,56 +53,69 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: Icon(Icons.person, color: Colors.indigo),
-                      title: Text('Profile'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProfilePage(
-                                    userName: 'User Name',
-                                    totalPoints: 100,
-                                    feedbacks: [],
-                                  )),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.settings, color: Colors.indigo),
-                      title: Text('Definições'),
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.person,
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => ProfilePage(
+                          userName:
+                              'User Name', // Replace with actual user name
+                          totalPoints: 100, // Replace with actual total points
+                          feedbacks: [], // Replace with actual feedbacks list
+                        ),
+                  ),
                 );
               },
-            );
-          },
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.black),
             ),
-          ),
+            ListTile(
+              leading: Icon(
+                Icons.settings,
+                color: const Color.fromARGB(255, 12, 41, 206),
+              ),
+              title: Text('Definições'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+          ],
         ),
+      ),
+      appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap: () => _onItemTapped(0), // Vai para o Mapa
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MapScreen()),
+                );
+              },
               child: Text(
                 'Mapa',
                 style: TextStyle(
@@ -105,14 +128,15 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
             SizedBox(width: 20),
             GestureDetector(
               onTap: () {
-                // Navega para a página de comentários
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CommentsPage(),
-                  ),
-                );
-              }, // Vai para Comentários
+                try {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CommentsPage()),
+                  );
+                } catch (e) {
+                  print("Erro ao abrir CommentsPage: \$e");
+                }
+              },
               child: Text(
                 'Comentários',
                 style: TextStyle(
@@ -126,44 +150,7 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
         ),
         centerTitle: true,
       ),
-      body: _selectedIndex == 0
-          ? MapPage()
-          : Container(), // Aqui o botão de Comentários já leva diretamente para a página de Comentários
-    );
-  }
-}
-
-class MapPage extends StatefulWidget {
-  @override
-  _MapPageState createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MapPage> {
-  GoogleMapController? _controller;
-
-  // Posição inicial do mapa (exemplo em San Francisco)
-  static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(37.7749, -122.4194), // Latitude e Longitude de exemplo
-    zoom: 10,
-  );
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: _initialPosition,
-      onMapCreated: (GoogleMapController controller) {
-        setState(() {
-          _controller = controller;
-        });
-      },
-      myLocationEnabled: true,
-      myLocationButtonEnabled: true,
+      body: Container(),
     );
   }
 }
