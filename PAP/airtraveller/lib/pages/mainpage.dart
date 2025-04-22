@@ -1,47 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'CommentsPage.dart';
-import 'profile.dart';
-import 'settings.dart';
+import 'package:intl/intl.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CommentsPage extends StatefulWidget {
+  const CommentsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AirTraveller',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 12, 41, 206),
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.indigo,
-        ).copyWith(secondary: Colors.amberAccent),
-      ),
-      home: const AirTravellerHomePage(),
-    );
-  }
+  _CommentsPageState createState() => _CommentsPageState();
 }
 
-class AirTravellerHomePage extends StatefulWidget {
-  const AirTravellerHomePage({super.key});
+class _CommentsPageState extends State<CommentsPage> {
+  final TextEditingController _commentController = TextEditingController();
+  final List<Comment> _comments = [];
 
-  @override
-  _AirTravellerHomePageState createState() => _AirTravellerHomePageState();
-}
-
-class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const EmbeddedMap(),
-    const CommentsPage(),
-  ];
+  void _addComment(String text) {
+    final now = DateTime.now();
+    final formattedTime = DateFormat('HH:mm').format(now);
+
+    setState(() {
+      _comments.add(
+        Comment(
+          userName: 'Utilizador',
+          time: formattedTime,
+          commentText: text,
+          likes: 0,
+        ),
+      );
+      _commentController.clear();
+    });
+  }
 
   void _onItemTapped(int index) {
     if (mounted) {
@@ -54,82 +42,42 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 12, 41, 206),
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person,
-                  color: Color.fromARGB(255, 12, 41, 206)),
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(
-                      userName: 'User Name',
-                      totalPoints: 100,
-                      feedbacks: [],
-                    ),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings,
-                  color: Color.fromARGB(255, 12, 41, 206)),
-              title: const Text('Definições'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => _onItemTapped(0),
-              child: Text(
-                'Mapa',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight:
-                      _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
-                  color: _selectedIndex == 0 ? Colors.white : Colors.white70,
+        title: Padding(
+          padding: const EdgeInsets.only(
+              top: 10), // Adicionando padding no topo para subir mais os botões
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _onItemTapped(0),
+                child: Text(
+                  'Mapa',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: _selectedIndex == 0
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: _selectedIndex == 0 ? Colors.white : Colors.white70,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 20),
-            GestureDetector(
-              onTap: () => _onItemTapped(1),
-              child: Text(
-                'Recomendações',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight:
-                      _selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
-                  color: _selectedIndex == 1 ? Colors.white : Colors.white70,
+              const SizedBox(width: 20),
+              GestureDetector(
+                onTap: () => _onItemTapped(1),
+                child: Text(
+                  'Recomendações',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: _selectedIndex == 1
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: _selectedIndex == 1 ? Colors.white : Colors.white70,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         centerTitle: true,
         actions: [
@@ -138,144 +86,186 @@ class _AirTravellerHomePageState extends State<AirTravellerHomePage> {
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: PlaceSearchDelegate(),
+                delegate: CommentSearchDelegate(_comments),
               );
             },
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Coloca os botões no topo do corpo
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => _onItemTapped(0),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _selectedIndex == 0
-                          ? Colors.blue
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: _comments.length,
+                itemBuilder: (context, index) {
+                  final comment = _comments[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Mapa',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: _selectedIndex == 0
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color:
-                            _selectedIndex == 0 ? Colors.white : Colors.black,
+                    elevation: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 25,
+                            backgroundImage: AssetImage(
+                              'assets/profile_picture.png',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      comment.userName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      comment.time,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  comment.commentText,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.thumb_up,
+                                        color: Colors.blue,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          comment.likes++;
+                                        });
+                                      },
+                                    ),
+                                    Text(
+                                      '${comment.likes} Likes',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    TextButton(
+                                      onPressed: () {
+                                        // Ação de responder
+                                      },
+                                      child: const Text(
+                                        'Responder',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundImage: AssetImage('assets/profile_picture.png'),
                 ),
-                const SizedBox(width: 20),
-                GestureDetector(
-                  onTap: () => _onItemTapped(1),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _selectedIndex == 1
-                          ? Colors.blue
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Recomendações',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: _selectedIndex == 1
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color:
-                            _selectedIndex == 1 ? Colors.white : Colors.black,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      hintText: 'Escreva um comentário...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          // Corpo da tela com o conteúdo dependendo do botão selecionado
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500), // Tempo da animação
-              child: _pages[_selectedIndex],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class EmbeddedMap extends StatelessWidget {
-  const EmbeddedMap({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: MapController(),
-      options: const MapOptions(
-        initialCenter: LatLng(39.4036, -9.1354), // Caldas da Rainha
-        initialZoom: 13.0,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate:
-              "https://api.maptiler.com/tiles/hillshade/{z}/{x}/{y}.png?key=sMVgxkL1jmZoQP53txBh",
-          subdomains: ['a', 'b', 'c'],
-          userAgentPackageName: 'com.example.app',
-        ),
-        TileLayer(
-          urlTemplate:
-              "https://api.maptiler.com/tiles/satellite/{z}/{x}/{y}.jpg?key=sMVgxkL1jmZoQP53txBh",
-          subdomains: ['a', 'b', 'c'],
-          userAgentPackageName: 'com.example.app',
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              point: LatLng(39.4036, -9.1354),
-              width: 80,
-              height: 80,
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.red,
-                size: 40.0,
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (_commentController.text.isNotEmpty) {
+                  _addComment(_commentController.text);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.blue,
               ),
+              child: const Text('Adicionar Comentário'),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
 
-// ===========================
-// Search Delegate funcional
-// ===========================
+class Comment {
+  final String userName;
+  final String time;
+  final String commentText;
+  int likes;
 
-final List<Map<String, dynamic>> searchItems = [
-  {'name': 'Parque D. Carlos I 🏛️', 'type': 'monument'},
-  {'name': 'Hospital Termal 🏛️', 'type': 'monument'},
-  {'name': 'Museu José Malhoa 🏛️', 'type': 'monument'},
-  {'name': 'Centro Cultural e de Congressos 🏛️', 'type': 'monument'},
-  {'name': 'Chafariz das Cinco Bicas 🏛️', 'type': 'monument'},
-  {'name': 'Estátua da Rainha D. Leonor 🏛️', 'type': 'monument'},
-];
+  Comment({
+    required this.userName,
+    required this.time,
+    required this.commentText,
+    this.likes = 0,
+  });
+}
 
-class PlaceSearchDelegate extends SearchDelegate {
+class CommentSearchDelegate extends SearchDelegate {
+  final List<Comment> comments;
+
+  CommentSearchDelegate(this.comments);
+
   @override
-  List<Widget> buildActions(BuildContext context) {
+  List<Widget>? buildActions(BuildContext context) {
     return [
       IconButton(
         icon: const Icon(Icons.clear),
@@ -287,7 +277,7 @@ class PlaceSearchDelegate extends SearchDelegate {
   }
 
   @override
-  Widget buildLeading(BuildContext context) {
+  Widget? buildLeading(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () => close(context, null),
@@ -296,21 +286,16 @@ class PlaceSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    final results = searchItems.where(
-      (item) => item['name'].toLowerCase().contains(query.toLowerCase()),
+    final results = comments.where(
+      (c) => c.commentText.toLowerCase().contains(query.toLowerCase()),
     );
 
     return ListView(
       children: results
           .map(
-            (item) => ListTile(
-              title: Text(item['name']),
-              onTap: () {
-                close(context, item['name']);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Selecionado: ${item['name']}')),
-                );
-              },
+            (comment) => ListTile(
+              title: Text(comment.commentText),
+              subtitle: Text('${comment.userName} • ${comment.time}'),
             ),
           )
           .toList(),
@@ -319,19 +304,16 @@ class PlaceSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final suggestions = searchItems.where(
-      (item) => item['name'].toLowerCase().contains(query.toLowerCase()),
+    final suggestions = comments.where(
+      (c) => c.commentText.toLowerCase().contains(query.toLowerCase()),
     );
 
     return ListView(
       children: suggestions
           .map(
-            (item) => ListTile(
-              title: Text(item['name']),
-              onTap: () {
-                query = item['name'];
-                showResults(context);
-              },
+            (comment) => ListTile(
+              title: Text(comment.commentText),
+              subtitle: Text('${comment.userName} • ${comment.time}'),
             ),
           )
           .toList(),

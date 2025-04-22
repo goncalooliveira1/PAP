@@ -1,6 +1,6 @@
 {
-    "name": "AirTraveller",
-    "short_name": "AirTraveller",
+    "name": "airtraveller",
+    "short_name": "airtraveller",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
