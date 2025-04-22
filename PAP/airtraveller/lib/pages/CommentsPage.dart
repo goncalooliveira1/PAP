@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-
 class CommentsPage extends StatefulWidget {
   const CommentsPage({super.key});
 
@@ -12,6 +11,8 @@ class CommentsPage extends StatefulWidget {
 class _CommentsPageState extends State<CommentsPage> {
   final TextEditingController _commentController = TextEditingController();
   final List<Comment> _comments = [];
+
+  int _selectedIndex = 0;
 
   void _addComment(String text) {
     final now = DateTime.now();
@@ -30,10 +31,61 @@ class _CommentsPageState extends State<CommentsPage> {
     });
   }
 
+  void _onItemTapped(int index) {
+    if (mounted) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Comentários")),
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => _onItemTapped(0),
+              child: Text(
+                'Mapa',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight:
+                      _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 0 ? Colors.white : Colors.white70,
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            GestureDetector(
+              onTap: () => _onItemTapped(1),
+              child: Text(
+                'Recomendações',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight:
+                      _selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 1 ? Colors.white : Colors.white70,
+                ),
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CommentSearchDelegate(_comments),
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -199,4 +251,66 @@ class Comment {
     required this.commentText,
     this.likes = 0,
   });
+}
+
+class CommentSearchDelegate extends SearchDelegate {
+  final List<Comment> comments;
+
+  CommentSearchDelegate(this.comments);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, null),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = comments.where(
+      (c) => c.commentText.toLowerCase().contains(query.toLowerCase()),
+    );
+
+    return ListView(
+      children: results
+          .map(
+            (comment) => ListTile(
+              title: Text(comment.commentText),
+              subtitle: Text('${comment.userName} • ${comment.time}'),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = comments.where(
+      (c) => c.commentText.toLowerCase().contains(query.toLowerCase()),
+    );
+
+    return ListView(
+      children: suggestions
+          .map(
+            (comment) => ListTile(
+              title: Text(comment.commentText),
+              subtitle: Text('${comment.userName} • ${comment.time}'),
+            ),
+          )
+          .toList(),
+    );
+  }
 }
