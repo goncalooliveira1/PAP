@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../commentspage.dart';
+import 'commentspage.dart';
 import 'profile.dart';
 import 'settings.dart';
 
