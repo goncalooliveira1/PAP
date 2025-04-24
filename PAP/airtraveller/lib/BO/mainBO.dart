@@ -1,9 +1,13 @@
+// main.dart
+import 'package:airtraveller/Class/location_data.dart';
+import 'package:airtraveller/Class/recommendation_post.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'settings.dart';
-// Importa a página do mapa interativo
 import 'interactive_map_page.dart';
+import 'package:airtraveller/Class/location_data.dart';
+import 'package:airtraveller/Class/recommendation_post.dart'; // Importa o modelo do post
 
 void main() {
   runApp(const MyApp());
@@ -32,20 +36,98 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  final List<String> monumentos = [
-    'Parque D. Carlos I',
-    'Museu José Malhoa',
-    'Hospital Termal das Caldas',
-    'Praça da Fruta',
-    'Igreja Nossa Senhora do Pópulo',
-    'Centro de Artes',
-    'Ermida de São Sebastião',
-  ];
+  final MapController _mapController = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+    LocationData().clearLocations();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _navigateToAddLocation(BuildContext context) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const InteractiveMapPage()),
+    );
+  }
+
+  void _navigateToLocationDetail(BuildContext context, LocalMarker location) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationDetailPage(location: location),
+      ),
+    );
+  }
+
+  IconData _getIconForType(String? type) {
+    switch (type) {
+      case 'Monumento':
+        return Icons.flag;
+      case 'Restaurante':
+        return Icons.restaurant;
+      case 'Hotel':
+        return Icons.hotel;
+      default:
+        return Icons.location_on;
+    }
+  }
+
+  Widget _buildMapPage() {
+    final locationData = LocationData();
+    return FlutterMap(
+      mapController: _mapController,
+      options: MapOptions(center: LatLng(39.4036, -9.1354), zoom: 13.0),
+      children: [
+        TileLayer(
+          urlTemplate:
+              "https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=sMVgxkL1jmZoQP53txBh",
+          userAgentPackageName: 'com.example.app',
+        ),
+        MarkerLayer(
+          markers:
+              locationData.createdLocations.map((location) {
+                print(
+                  "A construir marcador para: ${location.title}, ${location.position}, Tipo: ${location.type}",
+                ); // DEBUG
+                return Marker(
+                  point: location.position,
+                  width: 120,
+                  height: 60,
+                  builder:
+                      (context) => GestureDetector(
+                        onTap:
+                            () => _navigateToLocationDetail(context, location),
+                        child: Column(
+                          children: [
+                            Icon(
+                              _getIconForType(location.type),
+                              color: Colors.red,
+                              size: 30,
+                            ),
+                            if (location.title.isNotEmpty)
+                              Text(
+                                location.title,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  backgroundColor: Colors.white70,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                          ],
+                        ),
+                      ),
+                );
+              }).toList(),
+        ),
+      ],
+    );
   }
 
   @override
@@ -60,7 +142,7 @@ class _MainPageState extends State<MainPage> {
               GestureDetector(
                 onTap: () => _onItemTapped(0),
                 child: Text(
-                  'Mapa Estático',
+                  'Mapa',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight:
@@ -88,25 +170,6 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InteractiveMapPage(),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Mapa Interativo',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
             ],
           ),
           centerTitle: true,
@@ -114,248 +177,230 @@ class _MainPageState extends State<MainPage> {
           iconTheme: const IconThemeData(color: Colors.black),
           actions: [
             IconButton(
-              icon: const Icon(Icons.search, color: Colors.black),
+              icon: const Icon(Icons.settings, color: Colors.black),
               onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: CommentSearchDelegate(monumentos),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            const UserAccountsDrawerHeader(
-              accountName: Text('Gonçalo'),
-              accountEmail: Text('goncalo@email.com'),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150',
-                ),
-              ),
-              decoration: BoxDecoration(color: Colors.blueGrey),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Configurações'),
-              onTap: () {
                 Navigator.pushNamed(context, '/settings');
               },
             ),
           ],
         ),
       ),
-      body: _selectedIndex == 0 ? const MapPage() : const FeedPage(),
-    );
-  }
-}
-
-class MapPage extends StatelessWidget {
-  const MapPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FlutterMap(
-      options: MapOptions(
-        center: LatLng(39.4036, -9.1354),
-        zoom: 15.0,
-        minZoom: 3.0,
-        maxZoom: 19.0,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _buildMapPage(),
+          FeedPage(), // Usa o FeedPage atualizado
+        ],
       ),
-      children: [
-        TileLayer(
-          urlTemplate:
-              "https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=sMVgxkL1jmZoQP53txBh",
-          userAgentPackageName: 'com.example.app',
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              point: LatLng(39.4036, -9.1354),
-              width: 40,
-              height: 40,
-              builder:
-                  (context) => const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
-                    size: 40,
-                  ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _navigateToAddLocation(context),
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'AirTraveller',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
-            Marker(
-              point: LatLng(39.4045, -9.1362), // Museu José Malhoa
-              width: 40,
-              height: 40,
-              builder:
-                  (context) => const Icon(
-                    Icons.location_on,
-                    color: Colors.blue,
-                    size: 40,
-                  ),
+            ListTile(
+              leading: const Icon(Icons.map),
+              title: const Text('Mapa'),
+              onTap: () {
+                _onItemTapped(0);
+                Navigator.pop(context);
+              },
             ),
-            Marker(
-              point: LatLng(39.4050, -9.1340), // Hospital Termal
-              width: 40,
-              height: 40,
-              builder:
-                  (context) => const Icon(
-                    Icons.local_hospital,
-                    color: Colors.green,
-                    size: 40,
-                  ),
-            ),
-            Marker(
-              point: LatLng(39.4030, -9.1350), // Praça da Fruta
-              width: 40,
-              height: 40,
-              builder:
-                  (context) =>
-                      const Icon(Icons.store, color: Colors.orange, size: 40),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('Recomendações'),
+              onTap: () {
+                _onItemTapped(1);
+                Navigator.pop(context);
+              },
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class FeedPage extends StatefulWidget {
-  const FeedPage({super.key});
+class LocationDetailPage extends StatefulWidget {
+  final LocalMarker location;
+
+  const LocationDetailPage({super.key, required this.location});
 
   @override
-  State<FeedPage> createState() => _FeedPageState();
+  State<LocationDetailPage> createState() => _LocationDetailPageState();
 }
 
-class _FeedPageState extends State<FeedPage> {
-  final List<String> posts = [];
-  final TextEditingController _controller = TextEditingController();
+class _LocationDetailPageState extends State<LocationDetailPage> {
+  final TextEditingController _commentController = TextEditingController();
+  List<String> _currentComments = [];
 
-  void _addPost(String text) {
-    if (text.isNotEmpty) {
+  @override
+  void initState() {
+    super.initState();
+    _currentComments = List.from(widget.location.comments);
+  }
+
+  void _addComment() {
+    if (_commentController.text.isNotEmpty) {
       setState(() {
-        posts.insert(0, text);
-        _controller.clear();
+        _currentComments.add(_commentController.text);
+        LocationData().addComment(
+          widget.location.position,
+          _commentController.text,
+        );
+        _commentController.clear();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    hintText: 'Escreve uma recomendação...',
-                    border: OutlineInputBorder(),
-                  ),
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.location.title)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.location.title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (widget.location.images.isNotEmpty)
+              SizedBox(
+                height: 150,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.location.images.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.file(
+                          widget.location.images[index],
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: () => _addPost(_controller.text),
+            if (widget.location.images.isEmpty)
+              const Text('Nenhuma foto adicionada.'),
+            const SizedBox(height: 20),
+            Text(widget.location.description),
+            const SizedBox(height: 20),
+            const Text(
+              'Comentários',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _currentComments.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(_currentComments[index]),
+                  );
+                },
               ),
-            ],
-          ),
-        ),
-        Expanded(
-          child:
-              posts.isEmpty
-                  ? const Center(child: Text("Nenhuma recomendação ainda."))
-                  : ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        child: ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(posts[index]),
-                        ),
-                      );
-                    },
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _commentController,
+                    decoration: const InputDecoration(
+                      labelText: 'Adicionar comentário',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _addComment,
+                  child: const Text('Enviar'),
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class CommentSearchDelegate extends SearchDelegate<String> {
-  final List<String> monumentos;
+class FeedPage extends StatelessWidget {
+  FeedPage({super.key});
 
-  CommentSearchDelegate(this.monumentos);
+  // Dados de exemplo para os posts
+  final List<RecommendationPost> _posts = [
+    RecommendationPost(
+      title: "Melhor vista da cidade",
+      description:
+          "Não percam o pôr do sol deste miradouro! Simplesmente espetacular.",
+      author: "Ana Silva",
+    ),
+    RecommendationPost(
+      title: "Restaurante imperdível",
+      description:
+          "Experimentei o novo restaurante italiano e adorei a massa fresca.",
+      author: "Pedro Gomes",
+    ),
+    RecommendationPost(
+      title: "Aventura na montanha",
+      description:
+          "A trilha até ao pico é desafiadora mas a recompensa é incrível.",
+      author: "Mariana Costa",
+    ),
+  ];
 
   @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () => close(context, ''),
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    final results =
-        monumentos
-            .where(
-              (monumento) =>
-                  monumento.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
+  Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: results.length,
+      itemCount: _posts.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          leading: const Icon(Icons.location_city),
-          title: Text(results[index]),
-          onTap: () => close(context, results[index]),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    final suggestions =
-        monumentos
-            .where(
-              (monumento) =>
-                  monumento.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
-    return ListView.builder(
-      itemCount: suggestions.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(suggestions[index]),
-          onTap: () {
-            query = suggestions[index];
-            showResults(context);
-          },
+        final post = _posts[index];
+        return Card(
+          margin: const EdgeInsets.all(8.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  post.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                Text(post.description),
+                const SizedBox(height: 8.0),
+                Text(
+                  "Publicado por: ${post.author}",
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                // Adicionar aqui a lógica para exibir a imagem do post, se existir
+              ],
+            ),
+          ),
         );
       },
     );
