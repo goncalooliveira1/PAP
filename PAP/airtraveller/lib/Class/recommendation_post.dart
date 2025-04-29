@@ -1,17 +1,19 @@
 import 'dart:io';
 
 class RecommendationPost {
-  final String title;
-  final String description;
-  final File? image;
-  final String author;
-  final List<String> comments; // Adiciona uma lista de comentários ao post
+  String title;
+  String description;
+  String author;
+  DateTime timestamp;
+  int likes;
+  File? image;
 
   RecommendationPost({
     required this.title,
     required this.description,
-    this.image,
     required this.author,
-    this.comments = const [], // Inicializa a lista de comentários como vazia
-  });
+    DateTime? timestamp,
+    this.likes = 0,
+    this.image,
+  }) : timestamp = timestamp ?? DateTime.now();
 }
