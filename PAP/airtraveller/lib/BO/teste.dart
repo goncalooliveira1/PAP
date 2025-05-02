@@ -200,10 +200,13 @@ class _MainPageState extends State<MainPage> {
           FeedPage(), // Usa o FeedPage atualizado
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddLocation(context),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton:
+          _selectedIndex == 0
+              ? FloatingActionButton(
+                onPressed: () => _navigateToAddLocation(context),
+                child: const Icon(Icons.add),
+              )
+              : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       drawer: Drawer(
         child: ListView(
@@ -339,10 +342,13 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _addComment,
-                  child: const Text('Enviar'),
+                const SizedBox(width: 8.0),
+                InkWell(
+                  onTap: _addComment,
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.send),
+                  ),
                 ),
               ],
             ),
@@ -564,20 +570,108 @@ class _FeedPageState extends State<FeedPage> {
                       const Divider(thickness: 1),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Row(
+                        child: Column(
                           children: [
-                            const CircleAvatar(
-                              radius: 14,
-                              child: Icon(Icons.person, size: 16),
-                            ),
-                            const SizedBox(width: 8.0),
-                            const Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Escreva um comentário...',
-                                  border: InputBorder.none,
+                            ...post.comments.asMap().entries.map((entry) {
+                              final idx = entry.key;
+                              final comment = entry.value;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const CircleAvatar(
+                                        radius: 14,
+                                        child: Icon(Icons.person, size: 16),
+                                      ),
+                                      const SizedBox(width: 8.0),
+                                      Expanded(child: Text(comment)),
+                                      TextButton(
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              final TextEditingController
+                                              _replyController =
+                                                  TextEditingController();
+                                              return AlertDialog(
+                                                title: const Text(
+                                                  'Responder Comentário',
+                                                ),
+                                                content: TextField(
+                                                  controller: _replyController,
+                                                  decoration:
+                                                      const InputDecoration(
+                                                        hintText:
+                                                            'Digite sua resposta',
+                                                      ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(
+                                                        context,
+                                                      ).pop();
+                                                    },
+                                                    child: const Text(
+                                                      'Cancelar',
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      if (_replyController
+                                                          .text
+                                                          .isNotEmpty) {
+                                                        setState(() {
+                                                          post.comments.add(
+                                                            "↳ ${_replyController.text}",
+                                                          );
+                                                        });
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop();
+                                                      }
+                                                    },
+                                                    child: const Text(
+                                                      'Responder',
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: const Text('Responder'),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(),
+                                ],
+                              );
+                            }),
+                            Row(
+                              children: [
+                                const CircleAvatar(
+                                  radius: 14,
+                                  child: Icon(Icons.person, size: 16),
                                 ),
-                              ),
+                                const SizedBox(width: 8.0),
+                                Expanded(
+                                  child: TextField(
+                                    decoration: const InputDecoration(
+                                      hintText: 'Escreva um comentário...',
+                                      border: InputBorder.none,
+                                    ),
+                                    onSubmitted: (value) {
+                                      if (value.isNotEmpty && mounted) {
+                                        setState(() {
+                                          post.comments.add(value);
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
